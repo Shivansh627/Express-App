@@ -3,16 +3,16 @@ const Contact = require("../models/contactModel");
 
 //@desc Get all the contacts
 //@route Get /api/contacts
-//@access public
+//@access private
 
 const getContacts = asynchandler(async (req, res) => {
-  const contact = await Contact.find();
+  const contact = await Contact.find({user_id:req.user.id});
   res.status(200).json(contact);
 });
 
 //@desc Get  contacts
 //@route Get /api/contacts/:id
-//@access public
+//@access private
 
 const getContact = asynchandler(async (req, res) => {
   const contact = await Contact.findById(req.params.id);
@@ -25,7 +25,7 @@ const getContact = asynchandler(async (req, res) => {
 
 //@desc create contacts
 //@route post /api/contacts
-//@access public
+//@access private
 
 const createContact = asynchandler(async (req, res) => {
   // console.log('the body is',req.body);
@@ -36,6 +36,7 @@ const createContact = asynchandler(async (req, res) => {
   }
 
   const contact = await Contact.create({
+    user_id: req.user.id,
     name,
     email,
     phone,
@@ -45,13 +46,17 @@ const createContact = asynchandler(async (req, res) => {
 
 //@desc update contacts
 //@route put /api/contacts/:id
-//@access public
+//@access private
 
 const updateContact = asynchandler(async (req, res) => {
   const contact = await Contact.findById(req.params.id);
   if (!contact) {
     res.status(404);
     throw new Error("Contact not found");
+  }
+  if(contact.user_id.toString() !== req.user.id){
+    res.status(403);
+    throw new Error("User don't have permission to update the contacts");
   }
 
   const updatedContact= await Contact.findByIdAndUpdate(
@@ -65,15 +70,19 @@ const updateContact = asynchandler(async (req, res) => {
 
 //@desc delete contacts
 //@route delete /api/contacts/:id
-//@access public
+//@access private
 
 const deleteContact = asynchandler(async (req, res) => {
-  const contact = await Contact.findByIdAndDelete(req.params.id);
+  const contact = await Contact.findById(req.params.id);
   if (!contact) {
     res.status(404);
     throw new Error("Contact not found");
   }
-
+  if(contact.user_id.toString() !== req.user.id){
+    res.status(403);
+    throw new Error("User don't have permission to update the contacts");
+  }
+  await Contact.deleteOne({id:req.params.id})
   res.status(200).json(contact);
 });
 
@@ -86,3 +95,4 @@ module.exports = {
   deleteContact,
   updateContact,
 };
+// 1:35:30

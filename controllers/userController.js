@@ -60,7 +60,7 @@ const loginUser = asynchandler(async (req, res) => {
         },
       },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "2m" }
+      { expiresIn: "1m" }
     );
     res.status(200).json({ accessToken });
   }else{
@@ -75,7 +75,7 @@ const loginUser = asynchandler(async (req, res) => {
 //@access private
 
 const currentUser = asynchandler(async (req, res) => {
-  res.json({ message: "current user info" });
+  res.json(req.user);
 });
 
 module.exports = {
